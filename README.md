@@ -114,7 +114,7 @@ The analyst can also query Beam's database directly through [MCP Toolbox for Dat
    claude mcp add --transport stdio course-db -e POSTGRES_HOST=$POSTGRES_HOST -e POSTGRES_PORT=$POSTGRES_PORT -e POSTGRES_DATABASE=$POSTGRES_DATABASE -e POSTGRES_USER=$POSTGRES_USER -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -- /path/to/toolbox --config tools.yaml --stdio
    ```
 
-4. **Check the connection**. `claude mcp list` shows `course-db`. Inside Claude Code, ask it to list the tables. Three tools are available: list the tables, describe a table, and run one read-only SQL statement.
+4. **Check the connection**. `claude mcp list` shows `course-db`. The first time Claude Code starts in the repo, it asks whether to trust the project's MCP server; approve it once. Inside Claude Code, ask it to list the tables. Three tools are available: list the tables, describe a table, and run one read-only SQL statement.
 
 The connection is read-only, and every statement runs in a read-only transaction. The analyst aggregates in SQL and never pulls raw rows. `knowledge/beam/*.yaml` holds the definitions it uses to write correct SQL.
 
