@@ -25,7 +25,7 @@ Before reviewing anything, you need to understand what the analyst is trying to 
 
 1. **Read the target** passed as the argument. For a run folder, that is `outputs/<run>/analysis.py`. If no argument is provided, ask which run folder or file to review.
 2. **See the numbers it produced.** From the repo root, rerun it with `poetry run python outputs/<run>/analysis.py` and read what it prints. Read the result tables in `outputs/<run>/data/` if you need them. Never print raw rows.
-3. **Check for project context**: read the CLAUDE.md or README at the project root. This tells you the domain, data model, and conventions. Then read `knowledge/beam/quirks.md` and `knowledge/beam/corrections.md`: the known quirks of Beam's tables and the corrections the analyst has been given.
+3. **Check for project context**: read the AGENTS.md or README at the project root. This tells you the domain, data model, and conventions. Then read `knowledge/beam/quirks.md` and `knowledge/beam/corrections.md`: the known quirks of Beam's tables and the corrections the analyst has been given.
 4. **Read the frame note.** `outputs/<run>/frame.md` gives you the question, the decision it informs, the audience, and what would change the decision. Take them from the note; do not interview the analyst for them.
 5. **Only when there is no frame note** (you were pointed at a bare script or notebook), **ask the analyst** (adapt based on what you already know: skip questions you can confidently answer from code and project context, but state your understanding and ask the analyst to confirm):
 
