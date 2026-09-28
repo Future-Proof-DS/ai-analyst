@@ -11,10 +11,13 @@ from pathlib import Path
 
 import matplotlib
 
+# Agg draws to files, not a window. Scripts run from the terminal with no
+# display, so this must be set before pyplot is imported.
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.figure import Figure  # noqa: E402
 
+# Gray for context, one accent color for the thing the reader should see.
 GRAY = "#B0B0B0"
 ACCENT = "#1F6FEB"
 TEXT = "#333333"
@@ -44,15 +47,21 @@ def bar(
     categories, values, title, highlight=None, ylabel=None, source=None,
     horizontal=False,
 ) -> Figure:
+    """Return a bar chart with the `highlight` categories in color and the rest gray.
+
+    Use it to compare a value across groups; set horizontal=True for long names.
+    """
     fig, ax = plt.subplots(figsize=(8, 5))
     focus = _as_list(highlight)
     colors = [ACCENT if c in focus else GRAY for c in categories]
     labels = [str(c) for c in categories]
     if horizontal:
         bars = ax.barh(labels, values, color=colors)
+        # barh draws the first category at the bottom; flip so it reads top-down.
         ax.invert_yaxis()
     else:
         bars = ax.bar(labels, values, color=colors)
+    # Values sit on the bars, so the reader does not have to read an axis.
     ax.bar_label(bars, fmt="{:,.0f}", padding=3, color=TEXT)
     _style(ax, title, ylabel, source)
     fig.tight_layout()
@@ -62,6 +71,10 @@ def bar(
 def line(
     x, series: dict[str, Sequence], title, highlight=None, ylabel=None, source=None
 ) -> Figure:
+    """Return a line chart with one line per entry in `series`, named at its end.
+
+    Use it for trends over time; pass the lines to color in `highlight`.
+    """
     fig, ax = plt.subplots(figsize=(9, 5))
     focus = _as_list(highlight)
     x = list(x)
@@ -69,6 +82,7 @@ def line(
         ys = list(ys)
         color = ACCENT if name in focus else GRAY
         ax.plot(x, ys, color=color, linewidth=2 if name in focus else 1.5)
+        # Name each line at its last point instead of using a legend.
         ax.annotate(
             name, xy=(x[-1], ys[-1]), xytext=(5, 0), textcoords="offset points",
             va="center", color=color, fontweight="bold" if name in focus else None,
@@ -79,8 +93,10 @@ def line(
 
 
 def save(fig: Figure, path: str | Path) -> Path:
+    """Save the chart as a PNG at `path`, creating folders as needed, and return the path."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=150, bbox_inches="tight")
+    # Close the figure so a script that makes many charts does not hold them all in memory.
     plt.close(fig)
     return path

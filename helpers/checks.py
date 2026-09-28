@@ -8,7 +8,12 @@ import pandas as pd
 def parts_sum_to_total(
     parts: Iterable[float], total: float, tolerance: float = 0.005
 ) -> dict:
+    """Check that segment values add back to the overall total, within a tolerance.
+
+    Use it after splitting a number by segment, to catch rows lost or counted twice.
+    """
     parts_sum = float(sum(parts))
+    # Compare as a relative difference so the tolerance works for counts and revenue alike.
     rel_diff = abs(parts_sum - total) / abs(total) if total else abs(parts_sum)
     ok = rel_diff <= tolerance
     verdict = "match" if ok else "do not match"
@@ -28,6 +33,10 @@ def parts_sum_to_total(
 def join_fan_out(
     left: pd.DataFrame, right: pd.DataFrame, on: str | list[str]
 ) -> dict:
+    """Check whether joining `right` onto `left` multiplies rows.
+
+    Use it before trusting any join; a fan-out silently inflates sums and counts.
+    """
     rows_before = len(left)
     rows_after = len(left.merge(right, on=on, how="inner"))
     duplicate_keys = int(right.duplicated(subset=on).sum())
@@ -49,7 +58,13 @@ def join_fan_out(
 
 
 def date_boundaries(df: pd.DataFrame, col: str, freq: str = "M") -> dict:
+    """Check whether the first and last periods of a date column are only partly covered.
+
+    Use it before comparing periods, so a half month is not read as a drop.
+    """
     dates = pd.to_datetime(df[col]).dropna()
+    # Normalise to midnight so a timestamp late on the last day still counts as
+    # covering that day when compared with the period's start and end.
     min_day, max_day = dates.min().normalize(), dates.max().normalize()
     first, last = min_day.to_period(freq), max_day.to_period(freq)
     first_partial = min_day > first.start_time.normalize()
@@ -78,6 +93,10 @@ def date_boundaries(df: pd.DataFrame, col: str, freq: str = "M") -> dict:
 
 
 def matured_only(df: pd.DataFrame, end_col: str, as_of=None) -> dict:
+    """Return only the rows whose window has closed by `as_of` (today by default).
+
+    Use it for trials or periods still running, whose outcome is not known yet.
+    """
     as_of = pd.Timestamp(as_of) if as_of is not None else pd.Timestamp.today()
     ends = pd.to_datetime(df[end_col])
     kept = df[ends <= as_of]

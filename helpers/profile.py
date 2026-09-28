@@ -6,15 +6,23 @@ from pathlib import Path
 
 import pandas as pd
 
+# Columns with this many distinct values or fewer get their full value counts listed.
 LOW_CARDINALITY_MAX = 20
 
 
 def is_date_column(name: str) -> bool:
+    """Return True if the column name follows Beam's date naming (`date`, `*_date`, `*_at`)."""
     return name == "date" or name.endswith("_date") or name.endswith("_at")
 
 
 def profile_csv(path: str | Path) -> dict:
+    """Return a profile of one CSV: shape, types, nulls, ids, date ranges and small value sets.
+
+    Use it when meeting a table for the first time, before any analysis.
+    """
     path = Path(path)
+    # Read the header first and pick date columns by their name suffix. Beam's
+    # exports name dates consistently, and guessing from values is slow and error prone.
     header = pd.read_csv(path, nrows=0).columns
     date_cols = [c for c in header if is_date_column(c)]
     df = pd.read_csv(path, parse_dates=date_cols)
@@ -29,6 +37,8 @@ def profile_csv(path: str | Path) -> dict:
         for col in df.columns
     ]
 
+    # Take the first *_id column as the table's key; duplicates there mean the
+    # table is not one row per id.
     id_column = next((c for c in df.columns if c.endswith("_id")), None)
     duplicate_ids = int(df[id_column].duplicated().sum()) if id_column else 0
 
@@ -45,6 +55,7 @@ def profile_csv(path: str | Path) -> dict:
     for col in df.columns:
         if col in date_cols or df[col].nunique() > LOW_CARDINALITY_MAX:
             continue
+        # value_counts leaves nulls out; the null rate is already in the columns table.
         counts = df[col].value_counts()
         low_cardinality[col] = {str(k): int(v) for k, v in counts.items()}
 
@@ -68,6 +79,7 @@ def profile_csv(path: str | Path) -> dict:
 
 
 def profile_to_markdown(result: dict) -> str:
+    """Return a profile from profile_csv as a markdown note, ready for knowledge/beam/."""
     grain = result["grain_guess"] or "no id column found"
     lines = [
         f"# {result['table']}",
