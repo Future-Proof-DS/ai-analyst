@@ -22,7 +22,7 @@ An AI data analyst that runs inside Claude Code and answers business questions a
 
 1. **Clone the repo**:
    ```bash
-   git clone <this-repo-url> ai-analyst
+   git clone https://github.com/Future-Proof-DS/ai-analyst.git
    cd ai-analyst
    ```
 
