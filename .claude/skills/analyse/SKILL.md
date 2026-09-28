@@ -2,7 +2,7 @@
 name: analyse
 description: Answers a framed business question about Beam's data with one pandas script that can be rerun, where every headline number carries its comparison. Use after a question has been framed, when it is time to compute the answer. Reads the frame note in the run folder under outputs/ and writes the script, result tables and charts next to it.
 user-invocable: true
-allowed-tools: Read Bash Write Edit Glob AskUserQuestion
+allowed-tools: Read Bash Write Edit Glob AskUserQuestion mcp__course-db__list_tables mcp__course-db__describe_table mcp__course-db__execute_sql
 argument-hint: "[path to the run folder under outputs/]"
 ---
 
@@ -11,6 +11,10 @@ You answer the framed question with code that can be rerun.
 The failure you exist to prevent: a confident number with no baseline, or a number that came out of a chain of arithmetic written in prose that nobody can check. "Trial conversion is 50%" tells a reader nothing until it says 50% against what. And a number computed in the conversation cannot be rerun, reviewed or corrected. The answer might even be right. Nobody can tell.
 
 So the model reasons and the code computes. You decide what to compute and what to compare it with. A script in the run folder does every count, rate, check and chart.
+
+## Two sources
+
+If the `course-db` tools (`mcp__course-db__list_tables`, `mcp__course-db__describe_table`, `mcp__course-db__execute_sql`) are available in this session, work in database mode: follow Act 1 and Act 3 below, and `## Database mode` for the rest. Otherwise follow the CSV mode, Acts 1 to 5.
 
 ## What this is NOT
 
@@ -29,6 +33,7 @@ These hold in every act.
 - **Segment before you average** when the frame or a quirk suggests groups behave differently. An average over groups that move in opposite directions hides both.
 - **Percentage points and relative percent are different numbers.** A rate going from 40% to 44% is up 4 percentage points and up 10% relative. Name which one you mean, every time.
 - **Never trust a period that has not closed.** A month still in progress, or a trial still inside its 14 days, is not a result yet.
+- **Aggregate in SQL, chart in pandas.** The database does the counting; only small result tables cross into the conversation and into Python.
 
 ## Act 1: Find the question (the gate)
 
@@ -77,6 +82,38 @@ On the CLI, report:
 - The path of the run folder.
 
 Keep it under twenty lines. No brief here; the Deliver step writes the brief.
+
+## Database mode
+
+Every query goes through the `course-db` tools, and every tool result lands in the conversation. This is where the context window fills up, and aggregating in SQL is the fix.
+
+### Act 2: Load the context
+
+1. Read `knowledge/beam/quirks.md`, `knowledge/beam/corrections.md`, and `knowledge/beam/<table>.yaml` for each table involved.
+2. If a table involved has no YAML, run the profile skill on it first (`.claude/skills/profile/SKILL.md`), then come back here.
+3. Say in one line which measures and golden queries apply, which quirks, and which corrections, if any.
+4. Definitions come from the YAML and nowhere else. Use its measures and field descriptions as written; do not restate them here or rewrite them in the plan.
+
+### Analysis date
+
+Find the last full day in the data once, with `SELECT MAX(payment_date)::date FROM payments` (or the equivalent for the tables in play). Write it into the plan, and use it instead of today for every maturity and closed-period rule.
+
+### Act 4: Query, save, then script
+
+1. For each result table the plan needs, run one aggregate SQL statement through `execute_sql`. Start from a golden query when one fits.
+2. Write the returned rows to `outputs/<run>/data/<name>.csv` with the Write tool, exactly as returned, header first.
+3. Aggregate in SQL; never pull raw rows. If a statement would return more than about 200 rows, aggregate further or add a filter.
+4. Write `outputs/<run>/analysis.py` as the record and the pandas step:
+   - every SQL statement that produced a result table, as a string constant, with a one-line comment naming the file it produced;
+   - load those CSVs with pandas;
+   - run the `helpers.checks` the plan needs: `parts_sum_to_total`, `date_boundaries` on the result tables, and `matured_only` with `as_of` set to the analysis date where a window applies. Print each check's `summary`;
+   - make the charts through `helpers.charts`, saved into `outputs/<run>/charts/<name>.png`, every title stating the takeaway;
+   - print the headline numbers, each with its comparison, and the check summaries.
+5. Run it from the repo root with `poetry run python outputs/<run>/analysis.py`, and fix it until it runs clean, as in CSV mode.
+
+### Act 5: Report
+
+Report as in CSV mode, plus one line: how many statements ran and roughly how many rows came back in total, so the context cost is visible.
 
 ## Principles
 

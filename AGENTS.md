@@ -13,10 +13,8 @@ A data analyst that runs inside Claude Code on Beam's data. Beam is a media app 
 data/                    Beam CSV exports; never modified
 knowledge/beam/          one note per table, quirks.md, corrections.md
 helpers/                 profile, checks, charts; the arithmetic runs here
-outputs/<date>_<slug>/   one folder per question:
-                         frame.md, analysis.py, data/, charts/, review.md, brief.md
-.claude/skills/          frame, profile, analyse, validate, deliver, describe-csv
-.claude/commands/        analyst
+outputs/<date>_<slug>/   one folder per question: frame.md, analysis.py, data/, charts/, review.md, brief.md
+.claude/                 skills: frame, profile, analyse, validate, deliver, describe-csv; command: analyst
 ```
 
 ## Conventions
@@ -26,3 +24,4 @@ outputs/<date>_<slug>/   one folder per question:
 - Get dates from `date +%F`; never guess them.
 - No em dashes in anything written for a reader.
 - Read `knowledge/beam/` (table notes, `quirks.md`, `corrections.md`) before touching data; when the user corrects you, append one dated line to `corrections.md` and continue.
+- Business definitions (churn, active, matured trial, prices) live in `knowledge/beam/*.yaml` and nowhere else; read them there, never restate them in a skill or a script.
