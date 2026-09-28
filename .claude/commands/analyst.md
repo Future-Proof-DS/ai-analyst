@@ -19,6 +19,8 @@ Every step below follows these rules.
 6. **Say what was not checked.** Open periods, unmatured trials and untested assumptions are part of the answer.
 7. **Read the knowledge folder before writing code, and write back what you learn.** Read `knowledge/beam/` (table notes, `quirks.md`, `corrections.md`) first; when the user corrects you, append the correction to `corrections.md` as one dated line and continue.
 
+## The steps
+
 1. Run the `frame` skill with the question above: read `.claude/skills/frame/SKILL.md` and follow it. Note the run folder it created.
 2. For each table named under "Tables likely involved" in the frame note that has no `knowledge/beam/<table>.md`, run the `profile` skill on it (`.claude/skills/profile/SKILL.md`).
 3. Run the `analyse` skill on the run folder (`.claude/skills/analyse/SKILL.md`).

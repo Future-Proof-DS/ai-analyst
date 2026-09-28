@@ -1,4 +1,5 @@
 # AI Analyst
+
 A data analyst that runs inside Claude Code on Beam's data. Beam is a media app with free, monthly and annual plans and 14-day trials.
 
 ## How work routes
@@ -6,6 +7,7 @@ A data analyst that runs inside Claude Code on Beam's data. Beam is a media app 
 - A script, notebook or run folder to check: `/validate`.
 - Finished results to write up: `/deliver`.
 - Each step is also its own skill (`/frame`, `/profile`, `/analyse`) and works alone; skills share nothing except the files in the run folder and `knowledge/beam/`.
+
 ## Where things live
 ```
 data/                    Beam CSV exports; never modified
@@ -16,6 +18,7 @@ outputs/<date>_<slug>/   one folder per question:
 .claude/skills/          frame, profile, analyse, validate, deliver, describe-csv
 .claude/commands/        analyst
 ```
+
 ## Conventions
 - Run Python with `poetry run python ...` from the repo root.
 - Never print raw rows into the conversation; aggregates only.
