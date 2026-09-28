@@ -20,7 +20,7 @@ If no path was given, or the file does not exist, say so and stop. Do not guess 
 
 ## Act 2: Count with one snippet
 
-Run this with Bash, replacing `<path>` with the file. Every number you report comes from its output.
+Run this with Bash, replacing `<path>` with the file. If a `pyproject.toml` exists in the current folder, run it with `poetry run python` in place of `python3`; otherwise run it with `python3` as written. If the import of pandas fails, say so in one line, suggest `pip install pandas`, and stop. Every number you report comes from its output.
 
 ```bash
 python3 - "<path>" <<'PY'
