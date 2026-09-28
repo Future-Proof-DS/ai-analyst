@@ -1,0 +1,41 @@
+# Tool definitions for MCP Toolbox for Databases.
+# Secrets come from environment variables, never from this file.
+kind: source
+name: beam
+type: postgres
+host: ${POSTGRES_HOST}
+port: ${POSTGRES_PORT}
+database: ${POSTGRES_DATABASE}
+user: ${POSTGRES_USER}
+password: ${POSTGRES_PASSWORD}
+queryParams:
+  sslmode: require
+  default_transaction_read_only: "on"
+connectTimeout: 10
+---
+kind: tool
+name: list_tables
+type: postgres-list-tables
+source: beam
+description: Lists the tables in the database. Pass output_format=simple for names only, or table_names to get full column, constraint and index detail for specific tables.
+---
+kind: tool
+name: describe_table
+type: postgres-sql
+source: beam
+description: Returns the columns, data types and nullability of one table in the public schema.
+parameters:
+  - name: table_name
+    type: string
+    description: Name of the table in the public schema, for example trials.
+statement: |
+  SELECT column_name, data_type, is_nullable
+  FROM information_schema.columns
+  WHERE table_schema = 'public' AND table_name = $1
+  ORDER BY ordinal_position;
+---
+kind: tool
+name: execute_sql
+type: postgres-execute-sql
+source: beam
+description: Runs one read-only SQL statement against Beam's database and returns the rows. Aggregate in SQL; never select raw rows.

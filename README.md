@@ -74,6 +74,49 @@ ai-analyst/
 
 Session-level data is not included.
 
+## Connecting to the live database
+
+The analyst can also query Beam's database directly through [MCP Toolbox for Databases](https://github.com/googleapis/mcp-toolbox).
+
+1. **Install the Toolbox**. It is a single binary, with no Python or Docker needed. Check the [releases page](https://github.com/googleapis/mcp-toolbox) for the current version.
+
+   macOS:
+   ```bash
+   brew install mcp-toolbox
+   ```
+   Or download the binary directly (Apple Silicon shown; use `darwin/amd64` on Intel):
+   ```bash
+   export VERSION=1.13.1
+   curl -L -o toolbox https://storage.googleapis.com/mcp-toolbox-for-databases/v$VERSION/darwin/arm64/toolbox
+   chmod +x toolbox
+   ```
+   Windows (PowerShell, where `curl.exe` is the real curl):
+   ```powershell
+   $VERSION = "1.13.1"
+   curl.exe -o toolbox.exe "https://storage.googleapis.com/mcp-toolbox-for-databases/v$VERSION/windows/amd64/toolbox.exe"
+   ```
+
+2. **Add your credentials**. Copy `.env.example` to `.env` and fill in the read-only credentials you were given. Then load them into the shell.
+
+   macOS and Linux:
+   ```bash
+   set -a && . ./.env && set +a
+   ```
+   Windows (PowerShell):
+   ```powershell
+   Get-Content .env | Where-Object { $_ -match '^[A-Z_]+=' } | ForEach-Object { $k, $v = $_ -split '=', 2; Set-Item "env:$k" $v }
+   ```
+
+3. **Register the server with Claude Code**. From the repo root, replacing `/path/to/toolbox` with where you put the binary:
+   ```bash
+   claude mcp add --transport stdio course-db -e POSTGRES_HOST=$POSTGRES_HOST -e POSTGRES_PORT=$POSTGRES_PORT -e POSTGRES_DATABASE=$POSTGRES_DATABASE -e POSTGRES_USER=$POSTGRES_USER -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -- /path/to/toolbox --config tools.yaml --stdio
+   ```
+   Or copy `.mcp.json.example` to `.mcp.json` and set the binary path in it. It reads the credentials from the variables you loaded in step 2.
+
+4. **Check the connection**. `claude mcp list` shows `course-db`. Inside Claude Code, ask it to list the tables. Three tools are available: list the tables, describe a table, and run one read-only SQL statement.
+
+The connection is read-only, and every statement runs in a read-only transaction. The analyst aggregates in SQL and never pulls raw rows. `knowledge/beam/*.yaml` holds the definitions it uses to write correct SQL.
+
 ---
 
 *Future Proof Data Science - Teaching data scientists to optimize workflows with AI*
