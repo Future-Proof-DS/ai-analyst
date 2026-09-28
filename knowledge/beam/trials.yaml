@@ -41,7 +41,7 @@ measures:
 
 golden_queries:
   - name: conversion_rate_by_start_week
-    description: Trial conversion rate over matured trials, by the week the trial started (analysis date 2026-09-24, the last full day in the data)
+    description: Trial conversion rate over matured trials, by the week the trial started (analysis date is the last full day in the data)
     sql: |
       SELECT DATE_TRUNC('week', started_at)::date AS start_week,
              COUNT(*) FILTER (WHERE outcome = 'converted') AS converted,
@@ -49,7 +49,7 @@ golden_queries:
              ROUND(COUNT(*) FILTER (WHERE outcome = 'converted')::numeric
                    / NULLIF(COUNT(*) FILTER (WHERE outcome IN ('converted', 'canceled')), 0), 4) AS conversion_rate
       FROM trials
-      WHERE ends_at::date <= DATE '2026-09-24'
+      WHERE ends_at::date <= (SELECT MAX(payment_date)::date FROM payments)
       GROUP BY 1
       ORDER BY 1;
 
@@ -62,6 +62,6 @@ golden_queries:
                    / NULLIF(COUNT(*) FILTER (WHERE t.outcome IN ('converted', 'canceled')), 0), 4) AS conversion_rate
       FROM trials t
       JOIN users u ON u.user_id = t.user_id
-      WHERE t.ends_at::date <= DATE '2026-09-24'
+      WHERE t.ends_at::date <= (SELECT MAX(payment_date)::date FROM payments)
       GROUP BY u.device_type
       ORDER BY conversion_rate DESC;

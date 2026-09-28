@@ -39,15 +39,15 @@ golden_queries:
       ORDER BY 1;
 
   - name: active_paid_share_by_country
-    description: Share of users in each country who hold an active paid subscription on the analysis date (2026-09-24, the last full day in the data)
+    description: Share of users in each country who hold an active paid subscription on the analysis date (the last full day in the data)
     sql: |
       SELECT u.country,
              COUNT(*) AS users,
              COUNT(*) FILTER (WHERE s.plan IN ('monthly', 'annual')
-                                AND (s.end_date IS NULL OR s.end_date::date > DATE '2026-09-24')) AS active_paid_users,
+                                AND (s.end_date IS NULL OR s.end_date::date > (SELECT MAX(payment_date)::date FROM payments))) AS active_paid_users,
              ROUND(COUNT(*) FILTER (WHERE s.plan IN ('monthly', 'annual')
-                                      AND (s.end_date IS NULL OR s.end_date::date > DATE '2026-09-24'))::numeric / COUNT(*), 4) AS paid_share
+                                      AND (s.end_date IS NULL OR s.end_date::date > (SELECT MAX(payment_date)::date FROM payments)))::numeric / COUNT(*), 4) AS paid_share
       FROM users u
-      LEFT JOIN subscriptions s ON s.user_id = u.user_id AND s.start_date::date <= DATE '2026-09-24'
+      LEFT JOIN subscriptions s ON s.user_id = u.user_id AND s.start_date::date <= (SELECT MAX(payment_date)::date FROM payments)
       GROUP BY u.country
       ORDER BY paid_share DESC;

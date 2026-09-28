@@ -56,7 +56,7 @@ golden_queries:
       ORDER BY 1, 2;
 
   - name: minutes_per_active_user_by_device_last_30_days
-    description: Minutes spent per active user by signup device over the 30 days ending on the analysis date (2026-09-24, the last full day in the data)
+    description: Minutes spent per active user by signup device over the 30 days ending on the analysis date (the last full day in the data)
     sql: |
       SELECT u.device_type,
              COUNT(DISTINCT s.user_id) AS active_users,
@@ -64,6 +64,7 @@ golden_queries:
              ROUND(SUM(s.duration_minutes)::numeric / COUNT(DISTINCT s.user_id), 1) AS minutes_per_active_user
       FROM sessions s
       JOIN users u ON u.user_id = s.user_id
-      WHERE s.session_date >= DATE '2026-08-26' AND s.session_date < DATE '2026-09-25'
+      WHERE s.session_date >= (SELECT MAX(payment_date)::date FROM payments) - 29
+        AND s.session_date < (SELECT MAX(payment_date)::date FROM payments) + 1
       GROUP BY u.device_type
       ORDER BY minutes_per_active_user DESC;

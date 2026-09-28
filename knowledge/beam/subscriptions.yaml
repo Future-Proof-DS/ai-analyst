@@ -63,13 +63,13 @@ golden_queries:
       ORDER BY m.month_start;
 
   - name: active_subscriptions_by_plan
-    description: Active subscriptions by plan on the analysis date (2026-09-24, the last full day in the data), with how many of them have a scheduled cancellation
+    description: Active subscriptions by plan on the analysis date (the last full day in the data), with how many of them have a scheduled cancellation
     sql: |
       SELECT plan,
              COUNT(*) AS active_subscriptions,
              COUNT(*) FILTER (WHERE end_date IS NOT NULL) AS scheduled_to_cancel
       FROM subscriptions
-      WHERE start_date::date <= DATE '2026-09-24'
-        AND (end_date IS NULL OR end_date::date > DATE '2026-09-24')
+      WHERE start_date::date <= (SELECT MAX(payment_date)::date FROM payments)
+        AND (end_date IS NULL OR end_date::date > (SELECT MAX(payment_date)::date FROM payments))
       GROUP BY plan
       ORDER BY active_subscriptions DESC;
