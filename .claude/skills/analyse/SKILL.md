@@ -58,20 +58,11 @@ Show the plan before writing the script.
 
 Write one script at `outputs/<run>/analysis.py`:
 
-1. Start with the lines that let it import `helpers` from the repo root. Running a script puts its own folder on the import path, not the repo root, so without them the import fails:
-
-   ```python
-   import sys
-   from pathlib import Path
-
-   sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-   ```
-
-2. Read `data/*.csv` with pandas.
-3. Use `helpers.checks` for at least the checks the plan needs: `date_boundaries` for partial periods at the edges, `matured_only` for windows that have not closed, `join_fan_out` before trusting any join, `parts_sum_to_total` when segments should add back to a total. Print each check's `summary`.
-4. Save each result table to `outputs/<run>/data/<name>.csv`.
-5. Make charts only through `helpers.charts`: `bar` or `line`, then `save` into `outputs/<run>/charts/<name>.png`. Every title states the takeaway the chart proves, not a label.
-6. Print the headline numbers, each with its comparison, and the check summaries. Print aggregates only.
+1. Read `data/*.csv` with pandas.
+2. Use `helpers.checks` for at least the checks the plan needs: `date_boundaries` for partial periods at the edges, `matured_only` for windows that have not closed, `join_fan_out` before trusting any join, `parts_sum_to_total` when segments should add back to a total. Print each check's `summary`.
+3. Save each result table to `outputs/<run>/data/<name>.csv`.
+4. Make charts only through `helpers.charts`: `bar` or `line`, then `save` into `outputs/<run>/charts/<name>.png`. Every title states the takeaway the chart proves, not a label.
+5. Print the headline numbers, each with its comparison, and the check summaries. Print aggregates only.
 
 Run it from the repo root with `poetry run python outputs/<run>/analysis.py`. If it fails, fix it and rerun until it runs clean. If a check fails, decide whether it changes the answer and fix the script or report it. If the data cannot answer the question, say so plainly and stop.
 

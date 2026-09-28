@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "An AI data analyst that runs inside Claude Code, on Beam's data"
 authors = ["Future Proof Data Science"]
 readme = "README.md"
-package-mode = false
+packages = [{ include = "helpers" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
