@@ -1,0 +1,75 @@
+table: subscriptions
+description: One row per user's subscription. Each user has at most one row, so plan changes are not kept as history. Churn is always read from end_date, never from status.
+
+fields:
+  - name: subscription_id
+    type: integer
+    description: Unique identifier for the subscription
+    role: entity
+
+  - name: user_id
+    type: integer
+    description: The user who holds the subscription. Each user has at most one subscription.
+    role: relationship
+    related_table: users
+    related_field: user_id
+
+  - name: plan
+    type: text
+    description: The subscription plan. One of free, monthly or annual. Free subscriptions never end and have no end_date, so leave them out of any churn or retention calculation.
+    role: dimension
+
+  - name: start_date
+    type: timestamp
+    description: Date when the subscription started. A start_date after the analysis date is a scheduled start that has not happened yet; leave those rows out of any count of what has happened.
+    role: dimension
+
+  - name: end_date
+    type: timestamp
+    description: Date when the subscription ended or is scheduled to end. Empty means the subscription is active. A date after the analysis date is a scheduled cancellation, and that subscription is still active today. This is the field to read churn from.
+    role: dimension
+
+  - name: status
+    type: text
+    description: Label on the subscription. One of active, expired or canceled. Rows without an end_date are active and rows with one are expired or canceled, but the label for ended subscriptions switched from expired to canceled for end dates from August 2026 on, including future scheduled ends. It does not separate voluntary cancellations from lapses and does not mean the subscription has already ended, so never read churn from status.
+    role: dimension
+
+measures:
+  - name: churned_subscriptions
+    formula: COUNT(subscription_id) FILTER (WHERE plan IN ('monthly', 'annual') AND end_date >= period_start AND end_date < period_end)
+    description: Paid subscriptions whose end_date falls in the period. Churn rates use paid plans only, dividing by paid subscriptions active at the start of the period.
+
+  - name: active_subscriptions
+    formula: COUNT(subscription_id) FILTER (WHERE start_date <= analysis_date AND (end_date IS NULL OR end_date > analysis_date))
+    description: Subscriptions that have started and have not ended on the analysis date, including those with a scheduled cancellation still ahead
+
+golden_queries:
+  - name: monthly_paid_churn_rate
+    description: Monthly churn rate for paid plans, the share of paid subscriptions active at the start of each month that ended during it
+    sql: |
+      WITH months AS (
+        SELECT generate_series(DATE '2026-01-01', DATE '2026-08-01', INTERVAL '1 month')::date AS month_start
+      )
+      SELECT m.month_start,
+             COUNT(*) AS paid_at_month_start,
+             COUNT(*) FILTER (WHERE s.end_date < m.month_start + INTERVAL '1 month') AS churned_subscriptions,
+             ROUND(COUNT(*) FILTER (WHERE s.end_date < m.month_start + INTERVAL '1 month')::numeric / COUNT(*), 4) AS churn_rate
+      FROM months m
+      JOIN subscriptions s
+        ON s.plan IN ('monthly', 'annual')
+       AND s.start_date < m.month_start
+       AND (s.end_date IS NULL OR s.end_date >= m.month_start)
+      GROUP BY m.month_start
+      ORDER BY m.month_start;
+
+  - name: active_subscriptions_by_plan
+    description: Active subscriptions by plan on the analysis date (2026-09-24, the last full day in the data), with how many of them have a scheduled cancellation
+    sql: |
+      SELECT plan,
+             COUNT(*) AS active_subscriptions,
+             COUNT(*) FILTER (WHERE end_date IS NOT NULL) AS scheduled_to_cancel
+      FROM subscriptions
+      WHERE start_date::date <= DATE '2026-09-24'
+        AND (end_date IS NULL OR end_date::date > DATE '2026-09-24')
+      GROUP BY plan
+      ORDER BY active_subscriptions DESC;

@@ -1,0 +1,69 @@
+table: sessions
+description: One row per user session in the app, about 4.3 million rows. Aggregate in SQL and return summaries, never raw rows.
+
+fields:
+  - name: session_id
+    type: integer
+    description: Unique identifier for the session
+    role: entity
+
+  - name: user_id
+    type: integer
+    description: The user who had the session
+    role: relationship
+    related_table: users
+    related_field: user_id
+
+  - name: session_date
+    type: timestamp
+    description: Date and time when the session occurred
+    role: dimension
+
+  - name: duration_minutes
+    type: integer
+    description: Length of the session in minutes
+    role: measure
+
+  - name: activity_type
+    type: text
+    description: The main activity performed during the session. One of browse, listen or read.
+    role: dimension
+
+measures:
+  - name: session_count
+    formula: COUNT(session_id)
+    description: Number of sessions in the period
+
+  - name: active_users
+    formula: COUNT(DISTINCT user_id)
+    description: Users with at least one session in the period
+
+  - name: total_minutes
+    formula: SUM(duration_minutes)
+    description: Total time spent in sessions in the period, in minutes
+
+golden_queries:
+  - name: monthly_sessions_by_activity
+    description: Sessions and average session length each month of 2026 through August, by activity type
+    sql: |
+      SELECT DATE_TRUNC('month', session_date)::date AS month,
+             activity_type,
+             COUNT(*) AS sessions,
+             ROUND(AVG(duration_minutes), 1) AS avg_minutes
+      FROM sessions
+      WHERE session_date >= DATE '2026-01-01' AND session_date < DATE '2026-09-01'
+      GROUP BY 1, 2
+      ORDER BY 1, 2;
+
+  - name: minutes_per_active_user_by_device_last_30_days
+    description: Minutes spent per active user by signup device over the 30 days ending on the analysis date (2026-09-24, the last full day in the data)
+    sql: |
+      SELECT u.device_type,
+             COUNT(DISTINCT s.user_id) AS active_users,
+             SUM(s.duration_minutes) AS total_minutes,
+             ROUND(SUM(s.duration_minutes)::numeric / COUNT(DISTINCT s.user_id), 1) AS minutes_per_active_user
+      FROM sessions s
+      JOIN users u ON u.user_id = s.user_id
+      WHERE s.session_date >= DATE '2026-08-26' AND s.session_date < DATE '2026-09-25'
+      GROUP BY u.device_type
+      ORDER BY minutes_per_active_user DESC;

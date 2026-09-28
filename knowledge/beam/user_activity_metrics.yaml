@@ -1,0 +1,50 @@
+table: marts.user_activity_metrics
+description: One row per calendar day from 2024-01-01, with no gaps, holding daily, weekly and monthly active users. An active user had at least one recorded session in the window. The table is platform-wide only, with no user, plan or segment, so it cannot split activity by group; use sessions for that.
+
+fields:
+  - name: date
+    type: date
+    description: Calendar date the metrics describe. Each row is one day.
+    role: entity
+
+  - name: dau
+    type: integer
+    description: Daily active users, the number of distinct users with at least one session on this exact date
+    role: measure
+
+  - name: wau
+    type: integer
+    description: Weekly active users, the number of distinct users with at least one session in the 7 days ending on this date
+    role: measure
+
+  - name: mau
+    type: integer
+    description: Monthly active users, the number of distinct users with at least one session in the 30 days ending on this date. It jumps in September 2025 with the known signup spike.
+    role: measure
+
+measures:
+  - name: stickiness
+    formula: dau::numeric / NULLIF(mau, 0)
+    description: Daily active users divided by monthly active users for a day, how many of the month's users come back on a given day. It falls from about 0.25 to about 0.21 at the September 2025 signup spike.
+
+golden_queries:
+  - name: month_end_mau
+    description: Monthly active users on the last day of each month
+    sql: |
+      SELECT DISTINCT ON (DATE_TRUNC('month', date))
+             DATE_TRUNC('month', date)::date AS month,
+             date AS last_day,
+             mau
+      FROM marts.user_activity_metrics
+      ORDER BY DATE_TRUNC('month', date), date DESC;
+
+  - name: monthly_average_stickiness
+    description: Average daily active users, monthly active users and stickiness for each month
+    sql: |
+      SELECT DATE_TRUNC('month', date)::date AS month,
+             ROUND(AVG(dau)) AS avg_dau,
+             ROUND(AVG(mau)) AS avg_mau,
+             ROUND(AVG(dau::numeric / NULLIF(mau, 0)), 4) AS avg_stickiness
+      FROM marts.user_activity_metrics
+      GROUP BY 1
+      ORDER BY 1;

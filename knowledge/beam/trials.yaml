@@ -1,0 +1,67 @@
+table: trials
+description: One row per free trial. Beam launched 14-day full-access trials on 2026-08-01, and each user has at most one trial.
+
+fields:
+  - name: trial_id
+    type: integer
+    description: Unique identifier for the trial
+    role: entity
+
+  - name: user_id
+    type: integer
+    description: The user who took the trial
+    role: relationship
+    related_table: users
+    related_field: user_id
+
+  - name: started_at
+    type: timestamp
+    description: Date and time when the trial began, from 2026-08-01 on
+    role: dimension
+
+  - name: ends_at
+    type: timestamp
+    description: Date and time when the trial ends, always 14 days after started_at. A trial is matured when ends_at is on or before the analysis date; only matured trials have a final outcome.
+    role: dimension
+
+  - name: outcome
+    type: text
+    description: How the trial ended. converted means the user rolled into a paid subscription; canceled means they did not. Empty until the trial matures, so an empty outcome is an open trial, not a failure.
+    role: dimension
+
+  - name: outcome_at
+    type: timestamp
+    description: Date and time of the outcome, empty while the trial is open. Conversions happen at the end of the trial and cancellations during it, so a trial that has not matured can already show canceled but never converted. This is why conversion rates count matured trials only.
+    role: dimension
+
+measures:
+  - name: conversion_rate
+    formula: COUNT(*) FILTER (WHERE outcome = 'converted')::numeric / NULLIF(COUNT(*) FILTER (WHERE outcome IN ('converted', 'canceled')), 0)
+    description: Share of trials that converted to a paid subscription, converted divided by converted plus canceled, over matured trials only (ends_at on or before the analysis date)
+
+golden_queries:
+  - name: conversion_rate_by_start_week
+    description: Trial conversion rate over matured trials, by the week the trial started (analysis date 2026-09-24, the last full day in the data)
+    sql: |
+      SELECT DATE_TRUNC('week', started_at)::date AS start_week,
+             COUNT(*) FILTER (WHERE outcome = 'converted') AS converted,
+             COUNT(*) FILTER (WHERE outcome = 'canceled') AS canceled,
+             ROUND(COUNT(*) FILTER (WHERE outcome = 'converted')::numeric
+                   / NULLIF(COUNT(*) FILTER (WHERE outcome IN ('converted', 'canceled')), 0), 4) AS conversion_rate
+      FROM trials
+      WHERE ends_at::date <= DATE '2026-09-24'
+      GROUP BY 1
+      ORDER BY 1;
+
+  - name: conversion_rate_by_device
+    description: Trial conversion rate over matured trials, by the device the user signed up on
+    sql: |
+      SELECT u.device_type,
+             COUNT(*) AS matured_trials,
+             ROUND(COUNT(*) FILTER (WHERE t.outcome = 'converted')::numeric
+                   / NULLIF(COUNT(*) FILTER (WHERE t.outcome IN ('converted', 'canceled')), 0), 4) AS conversion_rate
+      FROM trials t
+      JOIN users u ON u.user_id = t.user_id
+      WHERE t.ends_at::date <= DATE '2026-09-24'
+      GROUP BY u.device_type
+      ORDER BY conversion_rate DESC;

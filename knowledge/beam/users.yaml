@@ -1,0 +1,53 @@
+table: users
+description: One row per registered Beam user, with when they signed up, their market and the device they signed up on.
+
+fields:
+  - name: user_id
+    type: integer
+    description: Unique identifier for the user
+    role: entity
+
+  - name: signup_date
+    type: timestamp
+    description: Date and time when the user signed up. Some rows carry midnight times and others real times, so compare on the date, not the full timestamp. September 2025 has about five times the signups of a normal month; this is a known anomaly, so call it out whenever it enters a comparison.
+    role: dimension
+
+  - name: country
+    type: text
+    description: The user's market, based on IP geolocation at signup, in four groups. US, EU, India, or Rest for every other country.
+    role: dimension
+
+  - name: device_type
+    type: text
+    description: The type of device used for signing up. One of Web, Android or iOS.
+    role: dimension
+
+measures:
+  - name: signups
+    formula: COUNT(user_id)
+    description: Number of users who signed up in the period, counted on signup_date
+
+golden_queries:
+  - name: monthly_signups
+    description: How many users signed up each month since January 2025 (September 2025 is the known signup spike)
+    sql: |
+      SELECT DATE_TRUNC('month', signup_date)::date AS month,
+             COUNT(*) AS signups
+      FROM users
+      WHERE signup_date >= DATE '2025-01-01'
+      GROUP BY 1
+      ORDER BY 1;
+
+  - name: active_paid_share_by_country
+    description: Share of users in each country who hold an active paid subscription on the analysis date (2026-09-24, the last full day in the data)
+    sql: |
+      SELECT u.country,
+             COUNT(*) AS users,
+             COUNT(*) FILTER (WHERE s.plan IN ('monthly', 'annual')
+                                AND (s.end_date IS NULL OR s.end_date::date > DATE '2026-09-24')) AS active_paid_users,
+             ROUND(COUNT(*) FILTER (WHERE s.plan IN ('monthly', 'annual')
+                                      AND (s.end_date IS NULL OR s.end_date::date > DATE '2026-09-24'))::numeric / COUNT(*), 4) AS paid_share
+      FROM users u
+      LEFT JOIN subscriptions s ON s.user_id = u.user_id AND s.start_date::date <= DATE '2026-09-24'
+      GROUP BY u.country
+      ORDER BY paid_share DESC;

@@ -1,0 +1,62 @@
+table: payments
+description: One row per billing charge on a paid subscription. Free subscriptions have no payments.
+
+fields:
+  - name: payment_id
+    type: integer
+    description: Unique identifier for the payment
+    role: entity
+
+  - name: subscription_id
+    type: integer
+    description: The subscription that was charged. Every payment belongs to a monthly or annual subscription.
+    role: relationship
+    related_table: subscriptions
+    related_field: subscription_id
+
+  - name: payment_date
+    type: timestamp
+    description: Date and time when the payment was made. No payment falls before its subscription's start or after its end.
+    role: dimension
+
+  - name: amount_usd
+    type: numeric
+    description: The payment amount in USD. Monthly charges are $10 before 2026-03-01 and $12 from March 2026 on, for every monthly subscriber, including those who joined before the change. Annual charges are $100 throughout.
+    role: measure
+
+  - name: method
+    type: text
+    description: How the user paid. One of card, paypal, apple_pay or google_pay.
+    role: dimension
+
+measures:
+  - name: revenue
+    formula: SUM(amount_usd)
+    description: Total amount charged in USD in the period
+
+  - name: paying_subscriptions
+    formula: COUNT(DISTINCT subscription_id)
+    description: Subscriptions charged at least once in the period. Monthly subscriptions are billed about every 30 days, a known quirk of the billing export, so some months carry two monthly charges for one subscription. Count paying subscriptions with distinct subscription_id, never by counting rows.
+
+golden_queries:
+  - name: monthly_revenue_by_plan
+    description: Revenue each month, split by plan
+    sql: |
+      SELECT DATE_TRUNC('month', p.payment_date)::date AS month,
+             s.plan,
+             SUM(p.amount_usd) AS revenue
+      FROM payments p
+      JOIN subscriptions s ON s.subscription_id = p.subscription_id
+      GROUP BY 1, 2
+      ORDER BY 1, 2;
+
+  - name: monthly_paying_subscriptions
+    description: Paying subscriptions, charges and revenue per paying subscription each month. Charges exceed paying subscriptions in months with a second monthly charge.
+    sql: |
+      SELECT DATE_TRUNC('month', p.payment_date)::date AS month,
+             COUNT(DISTINCT p.subscription_id) AS paying_subscriptions,
+             COUNT(*) AS charges,
+             ROUND(SUM(p.amount_usd) / COUNT(DISTINCT p.subscription_id), 2) AS revenue_per_paying_subscription
+      FROM payments p
+      GROUP BY 1
+      ORDER BY 1;
