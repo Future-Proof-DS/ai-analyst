@@ -12,7 +12,7 @@ If the question above is empty, ask for the question and stop. Never invent one.
 Every step below follows these rules.
 
 1. **Frame the decision before touching data.** If the question does not say what decision it informs and who decides, ask; never reconstruct it.
-2. **Never answer a table question from the schema alone.** Profile first; a table without a note in `knowledge/beam/` gets one before it is used.
+2. **Never answer a table question from the schema alone.** Profile first; a table without a file in `knowledge/beam/` (its YAML definition, or a profiled note before that exists) gets one before it is used.
 3. **A naked number is not a finding.** Every number carries a comparison (prior period, segment or benchmark) or says none is available; percentage points and relative percent are named.
 4. **Cite the table, the filter and the code.** Every number in a brief traces to `analysis.py` and a result table in the run folder.
 5. **Parts sum to totals and joins do not fan out.** The checks in `helpers/checks.py` run in code, not in prose.
@@ -22,7 +22,7 @@ Every step below follows these rules.
 ## The steps
 
 1. Run the `frame` skill with the question above: read `.claude/skills/frame/SKILL.md` and follow it. Note the run folder it created.
-2. For each table named under "Tables likely involved" in the frame note that has no `knowledge/beam/<table>.md`, run the `profile` skill on it (`.claude/skills/profile/SKILL.md`).
+2. For each table named under "Tables likely involved" in the frame note that has neither `knowledge/beam/<table>.yaml` nor `knowledge/beam/<table>.md`, run the `profile` skill on it (`.claude/skills/profile/SKILL.md`).
 3. Run the `analyse` skill on the run folder (`.claude/skills/analyse/SKILL.md`).
 4. Run the `validate` skill on the run folder (`.claude/skills/validate/SKILL.md`). If its verdict is **Fix first**, fix `analysis.py` according to the findings, rerun it, and run `validate` again. At most two rounds. If it is still **Fix first**, stop and report the findings; do not write a brief. If its verdict is **Think on it**, apply any finding that is a small change to `analysis.py` (a filter, a baseline, a label) and rerun the script once, and carry every remaining finding into the brief's Checks section as not verified; do not run `validate` again.
 5. Run the `deliver` skill on the run folder (`.claude/skills/deliver/SKILL.md`).

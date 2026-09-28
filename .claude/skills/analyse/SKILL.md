@@ -44,7 +44,7 @@ These hold in every act.
 
 ## Act 2: Load the context
 
-1. Read `knowledge/beam/quirks.md`, `knowledge/beam/corrections.md`, and `knowledge/beam/<table>.md` for each table involved.
+1. Read `knowledge/beam/quirks.md`, `knowledge/beam/corrections.md`, and, for each table involved, `knowledge/beam/<table>.yaml` when it exists, otherwise `knowledge/beam/<table>.md`.
 2. If a table involved has no note, run the profile skill on it first: read `.claude/skills/profile/SKILL.md` and follow it, then come back here.
 3. Say in one line which quirks apply to this question, and which corrections, if any.
 
