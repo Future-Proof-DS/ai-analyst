@@ -1,0 +1,86 @@
+"""Chart helpers with one house style.
+
+Three rules:
+1. Gray first, color for focus: everything is gray except what the reader should look at.
+2. The title is the takeaway: pass the sentence the chart proves, not a label.
+3. Label directly: values sit on the bars and names at the end of lines, no legend.
+"""
+
+from collections.abc import Sequence
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.figure import Figure  # noqa: E402
+
+GRAY = "#B0B0B0"
+ACCENT = "#1F6FEB"
+TEXT = "#333333"
+
+
+def _as_list(highlight) -> list:
+    if highlight is None:
+        return []
+    if isinstance(highlight, (list, tuple, set)):
+        return list(highlight)
+    return [highlight]
+
+
+def _style(ax, title: str, ylabel: str | None, source: str | None) -> None:
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    ax.grid(False)
+    ax.tick_params(colors=TEXT)
+    ax.set_title(title, loc="left", fontweight="bold", color=TEXT)
+    if ylabel:
+        ax.set_ylabel(ylabel, color=TEXT)
+    if source:
+        ax.figure.text(0.01, 0.01, source, fontsize=8, color=GRAY, ha="left")
+
+
+def bar(
+    categories, values, title, highlight=None, ylabel=None, source=None,
+    horizontal=False,
+) -> Figure:
+    fig, ax = plt.subplots(figsize=(8, 5))
+    focus = _as_list(highlight)
+    colors = [ACCENT if c in focus else GRAY for c in categories]
+    labels = [str(c) for c in categories]
+    if horizontal:
+        bars = ax.barh(labels, values, color=colors)
+        ax.invert_yaxis()
+    else:
+        bars = ax.bar(labels, values, color=colors)
+    ax.bar_label(bars, fmt="{:,.0f}", padding=3, color=TEXT)
+    _style(ax, title, ylabel, source)
+    fig.tight_layout()
+    return fig
+
+
+def line(
+    x, series: dict[str, Sequence], title, highlight=None, ylabel=None, source=None
+) -> Figure:
+    fig, ax = plt.subplots(figsize=(9, 5))
+    focus = _as_list(highlight)
+    x = list(x)
+    for name, ys in series.items():
+        ys = list(ys)
+        color = ACCENT if name in focus else GRAY
+        ax.plot(x, ys, color=color, linewidth=2 if name in focus else 1.5)
+        ax.annotate(
+            name, xy=(x[-1], ys[-1]), xytext=(5, 0), textcoords="offset points",
+            va="center", color=color, fontweight="bold" if name in focus else None,
+        )
+    _style(ax, title, ylabel, source)
+    fig.tight_layout()
+    return fig
+
+
+def save(fig: Figure, path: str | Path) -> Path:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    return path
