@@ -111,12 +111,12 @@ The analyst can also query Beam's database directly through [MCP Toolbox for Dat
 
    Alternatively, register it with one command. This stores the expanded values, password included, in your user Claude config, and it uses bash variable syntax, so on PowerShell use the `.mcp.json` route instead:
    ```bash
-   claude mcp add --transport stdio course-db -e POSTGRES_HOST=$POSTGRES_HOST -e POSTGRES_PORT=$POSTGRES_PORT -e POSTGRES_DATABASE=$POSTGRES_DATABASE -e POSTGRES_USER=$POSTGRES_USER -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -- /path/to/toolbox --config tools.yaml --stdio
+   claude mcp add --transport stdio course-db -e POSTGRES_HOST=$POSTGRES_HOST -e POSTGRES_PORT=$POSTGRES_PORT -e POSTGRES_DATABASE=$POSTGRES_DATABASE -e POSTGRES_USER=$POSTGRES_USER -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -- /path/to/toolbox --prebuilt postgres --stdio
    ```
 
-4. **Check the connection**. `claude mcp list` shows `course-db`. The first time Claude Code starts in the repo, it asks whether to trust the project's MCP server; approve it once. Inside Claude Code, ask it to list the tables. Three tools are available: list the tables, describe a table, and run one read-only SQL statement.
+4. **Check the connection**. `claude mcp list` shows `course-db`. The first time Claude Code starts in the repo, it asks whether to trust the project's MCP server; approve it once. Inside Claude Code, ask it to list the tables. Toolbox's ready-made Postgres set has 29 tools, most of them for database admins. The analyst uses two: `list_tables`, which returns a table's columns, and `execute_sql`, which runs one SQL statement.
 
-The connection is read-only, and every statement runs in a read-only transaction. The analyst aggregates in SQL and never pulls raw rows. `knowledge/beam/*.yaml` holds the definitions it uses to write correct SQL.
+The `students` role is read-only, so no statement can change the data. The analyst aggregates in SQL and never pulls raw rows. `knowledge/beam/*.yaml` holds the definitions it uses to write correct SQL.
 
 ---
 

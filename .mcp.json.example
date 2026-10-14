@@ -3,7 +3,7 @@
     "course-db": {
       "type": "stdio",
       "command": "/path/to/toolbox",
-      "args": ["--config", "tools.yaml", "--stdio"],
+      "args": ["--prebuilt", "postgres", "--stdio"],
       "env": {
         "POSTGRES_HOST": "${POSTGRES_HOST}",
         "POSTGRES_PORT": "${POSTGRES_PORT}",

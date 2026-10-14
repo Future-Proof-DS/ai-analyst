@@ -2,7 +2,7 @@
 name: profile
 description: Profiles one of Beam's tables from the data itself and writes what it learned into the knowledge folder, so the next analysis starts from facts instead of column names. Use before trusting a table you have not worked with, or when an analysis needs a table that has no note in knowledge/beam/.
 user-invocable: true
-allowed-tools: Read Bash Write Edit AskUserQuestion mcp__course-db__list_tables mcp__course-db__describe_table mcp__course-db__execute_sql
+allowed-tools: Read Bash Write Edit AskUserQuestion mcp__course-db__list_tables mcp__course-db__execute_sql
 argument-hint: <path to a CSV in data/, or a table name>
 ---
 
@@ -14,7 +14,7 @@ Your job is to describe the table from the data, not from the schema, and to wri
 
 ## Two sources
 
-If the `course-db` tools (`mcp__course-db__list_tables`, `mcp__course-db__describe_table`, `mcp__course-db__execute_sql`) are available in this session, work in database mode: follow `## Database mode` below and skip the CSV acts. Otherwise follow the CSV mode, Acts 1 to 6 and Deliver.
+If the `course-db` tools (`mcp__course-db__list_tables`, `mcp__course-db__execute_sql`) are available in this session, work in database mode: follow `## Database mode` below and skip the CSV acts. Otherwise follow the CSV mode, Acts 1 to 6 and Deliver.
 
 ## What this is NOT
 
@@ -88,7 +88,7 @@ Every tool result lands in the conversation, so a probe that returns many rows c
 
 ### Act 2: Profile with aggregate SQL only
 
-1. Call `describe_table` first for the columns and types. It reads the public schema only; for a `marts.` table, call `list_tables` with `table_names` set to that table instead.
+1. Call `list_tables` first, with `table_names` set to that table, for the columns and types.
 2. Then run one statement per fact through `execute_sql`:
    - the row count;
    - the null count per column, in one statement with `COUNT(*) FILTER (WHERE <col> IS NULL)` per column;

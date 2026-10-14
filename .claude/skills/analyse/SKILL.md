@@ -2,7 +2,7 @@
 name: analyse
 description: Answers a framed business question about Beam's data with one pandas script that can be rerun, where every headline number carries its comparison. Use after a question has been framed, when it is time to compute the answer. Reads the frame note in the run folder under outputs/ and writes the script, result tables and charts next to it.
 user-invocable: true
-allowed-tools: Read Bash Write Edit Glob AskUserQuestion mcp__course-db__list_tables mcp__course-db__describe_table mcp__course-db__execute_sql
+allowed-tools: Read Bash Write Edit Glob AskUserQuestion mcp__course-db__list_tables mcp__course-db__execute_sql
 argument-hint: "[path to the run folder under outputs/]"
 ---
 
@@ -14,7 +14,7 @@ So the model reasons and the code computes. You decide what to compute and what 
 
 ## Two sources
 
-If the `course-db` tools (`mcp__course-db__list_tables`, `mcp__course-db__describe_table`, `mcp__course-db__execute_sql`) are available in this session, work in database mode: follow Act 1 and Act 3 below, and `## Database mode` for the rest. Otherwise follow the CSV mode, Acts 1 to 5.
+If the `course-db` tools (`mcp__course-db__list_tables`, `mcp__course-db__execute_sql`) are available in this session, work in database mode: follow Act 1 and Act 3 below, and `## Database mode` for the rest. Otherwise follow the CSV mode, Acts 1 to 5.
 
 ## What this is NOT
 
