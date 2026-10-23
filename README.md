@@ -20,13 +20,7 @@ An AI data analyst that runs inside Claude Code and answers business questions a
 
 ### Installation
 
-1. **Clone the repo**:
-   ```bash
-   git clone https://github.com/Future-Proof-DS/ai-analyst.git
-   cd ai-analyst
-   ```
-
-2. **Install Poetry** (if not already installed):
+1. **Install Poetry** (if not already installed):
    
    **Windows (PowerShell)**:
    ```powershell
@@ -42,12 +36,12 @@ An AI data analyst that runs inside Claude Code and answers business questions a
    - **Windows**: Add `%APPDATA%\Python\Scripts` to your system PATH
    - **macOS/Linux**: Add `export PATH="$HOME/.local/bin:$PATH"` to your `~/.bashrc` or `~/.zshrc`
 
-3. **Install dependencies**:
+2. **Install dependencies**:
    ```bash
    poetry install
    ```
 
-4. **Start Claude Code**:
+3. **Start Claude Code**:
    ```bash
    claude
    ```
