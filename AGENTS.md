@@ -15,8 +15,7 @@ knowledge/beam/          one note per table, quirks.md, corrections.md
 helpers/                 profile, checks, charts; the arithmetic runs here
 outputs/<date>_<slug>/   one folder per question:
                          frame.md, analysis.py, data/, charts/, review.md, brief.md
-.claude/skills/          frame, profile, analyse, validate, deliver, describe-csv
-.claude/commands/        analyst
+.claude/skills/          analyst, frame, profile, analyse, validate, deliver, describe-csv
 ```
 
 ## Conventions
