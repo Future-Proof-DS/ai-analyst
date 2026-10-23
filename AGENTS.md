@@ -14,7 +14,7 @@ data/                    Beam CSV exports; never modified
 knowledge/beam/          one YAML per table (or a profiled note before it exists), quirks.md, corrections.md
 helpers/                 profile, checks, charts; the arithmetic runs here
 outputs/<date>_<slug>/   one folder per question: frame.md, analysis.py, data/, charts/, review.md, brief.md
-.claude/                 skills: frame, profile, analyse, validate, deliver, describe-csv; command: analyst
+.claude/                 skills: analyst, frame, profile, analyse, validate, deliver, describe-csv
 ```
 
 ## Conventions

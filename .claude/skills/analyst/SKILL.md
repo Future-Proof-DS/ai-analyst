@@ -1,5 +1,7 @@
 ---
+name: analyst
 description: "Answer a business question about Beam's data end to end: frame, profile, analyse, validate, deliver."
+user-invocable: true
 argument-hint: "<the business question>"
 ---
 

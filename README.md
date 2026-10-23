@@ -45,7 +45,7 @@ An AI data analyst that runs inside Claude Code and answers business questions a
    ```bash
    claude
    ```
-   Run `claude` from the repo root so it picks up the project's skills, commands and instructions.
+   Run `claude` from the repo root so it picks up the project's skills and instructions.
 
 ## Usage
 
@@ -63,7 +63,7 @@ ai-analyst/
 ├── knowledge/beam/       # Known data quirks and corrections
 ├── helpers/              # Shared Python helpers for analysis scripts
 ├── outputs/              # One folder per question (not tracked)
-├── .claude/              # Skills and commands for Claude Code
+├── .claude/              # Skills for Claude Code
 └── pyproject.toml        # Dependencies
 ```
 
