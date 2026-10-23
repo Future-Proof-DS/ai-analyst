@@ -26,19 +26,28 @@ An AI data analyst that runs inside Claude Code and answers business questions a
    cd ai-analyst
    ```
 
-2. **Install dependencies**:
+2. **Install Poetry** (if not already installed):
+   
+   **Windows (PowerShell)**:
+   ```powershell
+   (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+   ```
+   
+   **macOS/Linux**:
+   ```bash
+   curl -sSL https://install.python-poetry.org | python3 -
+   ```
+   
+   After installation, restart your terminal. If `poetry` command is not found:
+   - **Windows**: Add `%APPDATA%\Python\Scripts` to your system PATH
+   - **macOS/Linux**: Add `export PATH="$HOME/.local/bin:$PATH"` to your `~/.bashrc` or `~/.zshrc`
 
-   > **Note:** This project uses Poetry for dependency management. If you don't have Poetry installed, you can install it with:
-   > ```bash
-   > curl -sSL https://install.python-poetry.org | python3 -
-   > ```
-   > See the [official Poetry documentation](https://python-poetry.org/docs/#installation) for alternative installation methods.
-
+3. **Install dependencies**:
    ```bash
    poetry install
    ```
 
-3. **Start Claude Code**:
+4. **Start Claude Code**:
    ```bash
    claude
    ```
