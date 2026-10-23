@@ -23,6 +23,7 @@ outputs/<date>_<slug>/   one folder per question:
 - Run Python with `poetry run python ...` from the repo root.
 - Never print raw rows into the conversation; aggregates only.
 - Never modify anything in `data/`.
-- Get dates from `date +%F`; never guess them.
+- Name run folders with today's date (YYYY-MM-DD).
+- The data ends on 2026-09-24. Treat that as "today" in every analysis, never the real date.
 - No em dashes in anything written for a reader.
 - Read `knowledge/beam/` (table notes, `quirks.md`, `corrections.md`) before touching data; when the user corrects you, append one dated line to `corrections.md` and continue.
